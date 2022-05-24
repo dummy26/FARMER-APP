@@ -1,10 +1,9 @@
-from django.conf.urls import url
-from django.urls import path
-from django.urls.resolvers import URLPattern
-from .views import *
 from django.conf import settings
 from django.conf.urls.static import static
+from django.urls import path
+from rest_framework.authtoken import views as auth_views
 
+from .views import *
 
 urlpatterns = [
     path('register/', registerUser.as_view(), name='register'),
@@ -18,4 +17,9 @@ urlpatterns = [
     path('residue/', NewResiduesViewset.as_view(), name='add-residue'),
     path('residues/',
          Residuelist.as_view({'get': 'list'}), name='residue-list'),
+    path('orders/', OrdersView.as_view(), name='order-list'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += [
+    path('token/', auth_views.obtain_auth_token)
+]

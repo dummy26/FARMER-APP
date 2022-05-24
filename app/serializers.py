@@ -65,3 +65,26 @@ class ResidueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Residue
         fields = '__all__'
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['machine', 'quantity']
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    order_items = OrderItemSerializer(source='orderitem_set', many=True)
+
+    class Meta:
+        model = Order
+        fields = ['customer', 'complete', 'order_items']
+        read_only_fields = ['customer']
+
+    def create(self, validated_data):
+        order_items = validated_data.pop('orderitem_set')
+        order = Order.objects.create(**validated_data)
+
+        for order_item in order_items:
+            OrderItem.objects.create(order=order, **order_item)
+        return order

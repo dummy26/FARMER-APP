@@ -1,18 +1,10 @@
-from django.http import request, response
-from django.http.response import Http404  # for bad request
-from django.shortcuts import get_object_or_404, render
-from rest_framework.serializers import Serializer
-from rest_framework.views import APIView  # view set to send data in api form
-# used to return response of a API class
-from rest_framework.response import Response
-from rest_framework import status  # for response status
-from rest_framework import viewsets  # for viewsets.read-only viewsets
-# authenticating a user using username and password
 from django.contrib.auth import authenticate
-# to add filters in a read only viewset
+from django.http.response import Http404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
-# Create your views here.
+from rest_framework import filters, generics, status, viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import *
 from .serializers import *
@@ -166,3 +158,15 @@ class Residuelist(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         residues = Residue.objects.all()
         return residues
+
+
+class OrdersView(generics.ListCreateAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return user.order_set.all()
+
+    def perform_create(self, serializer):
+        serializer.save(customer=self.request.user)

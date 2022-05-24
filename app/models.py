@@ -1,8 +1,9 @@
-from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.db.models.fields import related
-from django.db.models.fields.related import ForeignKey
-# Create your models here.
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
 
 
 class User(AbstractUser):
@@ -67,3 +68,26 @@ class Residue(models.Model):
 
     def __str__(self):
         return self.type_of_residue
+
+
+class Order(models.Model):
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    complete = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.customer.name + ' ' + str(self.complete)
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+
+    def __str__(self):
+        return self.machine.name + ' ' + str(self.quantity)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
