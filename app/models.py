@@ -58,3 +58,12 @@ class Bookmark(models.Model):
 
     def __str__(self):
         return self.user + self.machine
+
+
+class Residue(models.Model):
+    type_of_residue = models.CharField(max_length=200)
+    price = models.IntegerField(default=0)
+    quantity = models.IntegerField(default=1)
+
+    def __str__(self):
+        return self.type_of_residue
