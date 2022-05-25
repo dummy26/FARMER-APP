@@ -18,6 +18,7 @@ urlpatterns = [
     path('residues/',
          Residuelist.as_view({'get': 'list'}), name='residue-list'),
     path('orders/', OrdersView.as_view(), name='order-list'),
+    path('orders/<int:pk>', OrderDetailView.as_view(), name='order-detail'),
     path('connections/', Connections.as_view(), name='connections'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

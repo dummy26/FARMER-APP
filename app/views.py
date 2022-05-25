@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
 
 from app.models import Machine, Order, OrderItem, Residue, User
@@ -171,6 +172,25 @@ class OrdersView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
+
+
+class OrderDetailView(generics.UpdateAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Order.objects.all()
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            data = {"complete": request.data['complete']}
+        except KeyError:
+            raise ValidationError()
+
+        order = self.get_object()
+        serializer = self.get_serializer(order, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
 
 
 class Connections(APIView):
