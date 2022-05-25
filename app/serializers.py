@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import *
 from rest_framework.validators import UniqueValidator
-from django.db.models import fields
+
+from app.models import (Bookmark, Delivery, Machine, Order, OrderItem, Residue,
+                        User)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -38,15 +39,6 @@ class MachineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Machine
         fields = '__all__'
-
-
-class ImageSerializer(serializers.ModelSerializer):
-
-    machine = MachineSerializer()
-
-    class Meta:
-        model = Images
-        fields = ['Machine', 'image']
 
 
 class DeliverySerializer(serializers.ModelSerializer):

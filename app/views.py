@@ -66,7 +66,7 @@ class UserViewset(APIView):
 
 class NewMachinesViewset(APIView):
     def post(self, request):
-        serializer = MachineSerializer(data=request.data)
+        serializer = MachineSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -82,13 +82,13 @@ class MachineViewset(APIView):
 
     def get(self, request, pk):
         machine = self.get_object(pk)
-        serializer = MachineSerializer(machine)
+        serializer = MachineSerializer(machine, context={'request': request})
         return Response(serializer.data)
 
     def put(self, request, pk):
         machine = self.get_object(pk)
         serializer = MachineSerializer(
-            machine, data=request.data, partial=True)
+            machine, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

@@ -31,14 +31,10 @@ class Machine(models.Model):
     guarantee = models.IntegerField(default=1)  # number of years
     sell = models.BooleanField(default=True)  # if its for sale
     rent = models.BooleanField(default=False)  # if its for rent
+    image = models.ImageField(upload_to='machine_images/')
 
     def __str__(self):
         return self.name
-
-
-class Images(models.Model):
-    machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='machine_images/')
 
 
 class Delivery(models.Model):
