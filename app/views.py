@@ -6,8 +6,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import *
-from .serializers import *
+from app.models import Machine, Order, OrderItem, Residue, User
+from app.serializers import (AddUser, MachineSerializer, OrderSerializer,
+                             ResidueSerializer, UserSerializer)
 
 
 class registerUser(APIView):
@@ -170,3 +171,27 @@ class OrdersView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
+
+
+class Connections(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if not user.is_industry:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        order_items = OrderItem.objects.filter(machine__industry=user)
+
+        connections = []
+        for order_item in order_items:
+            order = Order.objects.get(id=order_item.order.id)
+            if not order.complete:
+                continue
+
+            customer = order.customer
+            if customer not in connections:
+                connections.append(customer)
+
+        serializer = UserSerializer(connections, many=True)
+        return Response(serializer.data)
