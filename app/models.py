@@ -69,15 +69,20 @@ class Residue(models.Model):
 class Order(models.Model):
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
     complete = models.BooleanField(default=False)
+    machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.customer.name + ' ' + str(self.complete)
+        return f'{self.customer.name} {self.machine.name} {str(self.complete)}'
 
 
-class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+class Cart(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
+    quantity = models.IntegerField(default=1)
 
     def __str__(self):
         return self.machine.name + ' ' + str(self.quantity)
@@ -87,3 +92,9 @@ class OrderItem(models.Model):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_user_cart(sender, instance=None,  created=False, *args, **kwargs):
+    if created:
+        Cart.objects.create(user=instance)

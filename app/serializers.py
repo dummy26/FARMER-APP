@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from app.models import (Bookmark, Delivery, Machine, Order, OrderItem, Residue,
+from app.models import (Bookmark, CartItem, Delivery, Machine, Order, Residue,
                         User)
 
 
@@ -59,24 +59,21 @@ class ResidueSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OrderItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrderItem
-        fields = ['machine', 'quantity']
-
-
 class OrderSerializer(serializers.ModelSerializer):
-    order_items = OrderItemSerializer(source='orderitem_set', many=True)
-
     class Meta:
         model = Order
-        fields = ['customer', 'complete', 'order_items']
+        fields = ['customer', 'machine', 'complete']
         read_only_fields = ['customer']
 
-    def create(self, validated_data):
-        order_items = validated_data.pop('orderitem_set')
-        order = Order.objects.create(**validated_data)
 
-        for order_item in order_items:
-            OrderItem.objects.create(order=order, **order_item)
-        return order
+class CartItemCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItem
+        fields = ["cart", "machine", "quantity"]
+        write_only_fields = ['cart']
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItem
+        fields = ["machine", "quantity"]

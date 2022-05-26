@@ -7,9 +7,11 @@ from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
 
-from app.models import Machine, Order, OrderItem, Residue, User
-from app.serializers import (AddUser, MachineSerializer, OrderSerializer,
-                             ResidueSerializer, UserSerializer)
+from app.models import CartItem, Machine, Order, Residue, User
+from app.serializers import (AddUser, CartItemCreateSerializer,
+                             CartItemSerializer, MachineSerializer,
+                             OrderSerializer, ResidueSerializer,
+                             UserSerializer)
 
 
 class registerUser(APIView):
@@ -175,8 +177,8 @@ class OrdersView(generics.ListCreateAPIView):
 
 
 class OrderDetailView(generics.UpdateAPIView):
-    serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer
     queryset = Order.objects.all()
 
     def patch(self, request, *args, **kwargs):
@@ -201,11 +203,9 @@ class Connections(APIView):
         if not user.is_industry:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        order_items = OrderItem.objects.filter(machine__industry=user)
-
         connections = []
-        for order_item in order_items:
-            order = Order.objects.get(id=order_item.order.id)
+        orders = Order.objects.filter(machine__industry=user)
+        for order in orders:
             if not order.complete:
                 continue
 
@@ -215,3 +215,29 @@ class Connections(APIView):
 
         serializer = UserSerializer(connections, many=True)
         return Response(serializer.data)
+
+
+class CartView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self, *args, **kwargs):
+        method = self.request.method
+        if method == 'GET':
+            return CartItemSerializer
+        return CartItemCreateSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return CartItem.objects.filter(cart__user=user)
+
+    def post(self, request, *args, **kwargs):
+        cart = self.request.user.cart
+        items = request.data['items']
+
+        for item in items:
+            item['cart'] = cart.id
+            serializer = CartItemSerializer(data=item)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+        return Response(status=status.HTTP_201_CREATED)
