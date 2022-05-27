@@ -67,9 +67,9 @@ class Residue(models.Model):
 
 
 class Order(models.Model):
-    PENDING = 'p'
-    ACCEPTED = 'a'
-    REJECTED = 'r'
+    PENDING = 'pending'
+    ACCEPTED = 'accepted'
+    REJECTED = 'rejected'
 
     STATUS_CHOICES = [
         (PENDING, 'Pending'),
