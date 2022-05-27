@@ -12,10 +12,11 @@ class User(AbstractUser):
     phone = models.CharField(max_length=10)
     location = models.TextField()
     is_industry = models.BooleanField(default=False)
-    token = models.TextField(null=True, blank=True)
+    first_name = None
+    last_name = None
 
     def __str__(self):
-        return self.name
+        return self.username
 
 
 class Machine(models.Model):

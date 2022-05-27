@@ -2,20 +2,22 @@ from django.contrib.auth import authenticate
 from django.http.response import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
 
 from app.models import CartItem, Machine, Order, Residue, User
-from app.serializers import (AddUser, CartItemCreateSerializer,
+from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
                              CartItemUpdateSerializer, MachineSerializer,
                              OrderSerializer, ResidueSerializer,
-                             UserSerializer)
+                             UserSerializer, UserUpdateSerializer)
 
 
 class registerUser(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request, format=None):
         data = request.data
         user = User.objects.create_user(
@@ -41,29 +43,34 @@ class login(APIView):
         return Response({"Error": "invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserViewset(APIView):
+class UserViewset(generics.RetrieveUpdateDestroyAPIView):
 
-    def get_object(self, pk):
-        try:
-            return User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            raise Http404
+    def get_permissions(self):
+        method = self.request.method
+        if method == 'GET':
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
-    def get(self, request, pk):
-        user = self.get_object(pk)
-        Serializer = UserSerializer(user)
-        return Response(Serializer.data)
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
-    def put(self, request, pk):
-        user = self.get_object(pk)
-        serializer = AddUser(user, data=request.data, partial=True)
-        if serializer.is_valid():
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def update(self, request, *args, **kwargs):
+        if request.user != self.get_object():
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self, request, pk):
-        user = self.get_object(pk)
-        user.delete()
+        serializer = UserUpdateSerializer(instance=request.user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        if request.user != self.get_object():
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        request.user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

@@ -12,7 +12,7 @@ from app.views import (CartCheckoutView, CartItemView, CartView, Connections,
 urlpatterns = [
     path('register/', registerUser.as_view(), name='register'),
     path('login/', login.as_view(), name='login'),
-    path('user/<int:pk>', UserViewset.as_view(), name='User'),
+    path('users/<int:pk>', UserViewset.as_view(), name='user'),
     path('machine/', NewMachinesViewset.as_view(), name='add-machine'),
     path('machine/<int:pk>', MachineViewset.as_view(), name='machine'),
     path('machines/',
