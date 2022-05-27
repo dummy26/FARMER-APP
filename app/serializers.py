@@ -60,10 +60,15 @@ class ResidueSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+
     class Meta:
         model = Order
-        fields = ['customer', 'machine', 'complete']
+        fields = ['customer', 'machine', 'status']
         read_only_fields = ['customer']
+
+    def get_status(self, obj):
+        return obj.get_status_display()
 
 
 class CartItemCreateSerializer(serializers.ModelSerializer):

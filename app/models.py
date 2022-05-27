@@ -67,13 +67,23 @@ class Residue(models.Model):
 
 
 class Order(models.Model):
+    PENDING = 'p'
+    ACCEPTED = 'a'
+    REJECTED = 'r'
+
+    STATUS_CHOICES = [
+        (PENDING, 'Pending'),
+        (ACCEPTED, 'Accepted'),
+        (REJECTED, 'Rejected'),
+    ]
+
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
     machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
-    complete = models.BooleanField(default=False)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=30, default=PENDING)
 
     def __str__(self):
-        return f'{self.customer.name} {self.machine.name} {self.quantity} {str(self.complete)}'
+        return f'{self.customer.name} {self.machine.name} {self.quantity} {str(self.status)}'
 
 
 class Cart(models.Model):

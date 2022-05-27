@@ -168,6 +168,8 @@ class Residuelist(viewsets.ReadOnlyModelViewSet):
 class OrdersView(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['status']
 
     def get_queryset(self):
         user = self.request.user
@@ -184,7 +186,7 @@ class OrderDetailView(generics.UpdateAPIView):
 
     def patch(self, request, *args, **kwargs):
         try:
-            data = {"complete": request.data['complete']}
+            data = {"status": request.data['status']}
         except KeyError:
             raise ValidationError()
 
@@ -207,7 +209,7 @@ class Connections(APIView):
         connections = []
         orders = Order.objects.filter(machine__industry=user)
         for order in orders:
-            if not order.complete:
+            if order.status != Order.ACCEPTED:
                 continue
 
             customer = order.customer
@@ -270,7 +272,7 @@ class CartCheckoutView(APIView):
     def get(self, request, *args, **kwargs):
         cart = request.user.cart
         for item in cart.get_items():
-            Order.objects.create(customer=request.user, machine=item.machine, quantity=item.quantity, complete=False)
+            Order.objects.create(customer=request.user, machine=item.machine, quantity=item.quantity)
             item.delete()
 
         return Response(status=status.HTTP_200_OK)
