@@ -3,10 +3,11 @@ from django.conf.urls.static import static
 from django.urls import path
 from rest_framework.authtoken import views as auth_views
 
-from app.views import (CartItemView, CartView, Connections, Machinelist,
-                       MachineViewset, NewMachinesViewset, NewResiduesViewset,
-                       OrderDetailView, OrdersView, Residuelist,
-                       ResidueViewset, UserViewset, login, registerUser)
+from app.views import (CartCheckoutView, CartItemView, CartView, Connections,
+                       Machinelist, MachineViewset, NewMachinesViewset,
+                       NewResiduesViewset, OrderDetailView, OrdersView,
+                       Residuelist, ResidueViewset, UserViewset, login,
+                       registerUser)
 
 urlpatterns = [
     path('register/', registerUser.as_view(), name='register'),
@@ -22,7 +23,8 @@ urlpatterns = [
          Residuelist.as_view({'get': 'list'}), name='residue-list'),
     path('orders/', OrdersView.as_view(), name='order-list'),
     path('cart/', CartView.as_view(), name='cart'),
-    path('cart/<int:pk>', CartItemView.as_view(), name='cart-item'),
+    path('cart-items/<int:pk>', CartItemView.as_view(), name='cart-items'),
+    path('cart/checkout', CartCheckoutView.as_view(), name='cart-checkout'),
     path('orders/<int:pk>', OrderDetailView.as_view(), name='order-detail'),
     path('connections/', Connections.as_view(), name='connections'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

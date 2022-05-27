@@ -68,15 +68,19 @@ class Residue(models.Model):
 
 class Order(models.Model):
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
-    complete = models.BooleanField(default=False)
     machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    complete = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.customer.name} {self.machine.name} {str(self.complete)}'
+        return f'{self.customer.name} {self.machine.name} {self.quantity} {str(self.complete)}'
 
 
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    def get_items(self):
+        return self.cartitem_set.all()
 
 
 class CartItem(models.Model):

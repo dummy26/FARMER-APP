@@ -9,9 +9,10 @@ from rest_framework.views import APIView
 
 from app.models import CartItem, Machine, Order, Residue, User
 from app.serializers import (AddUser, CartItemCreateSerializer,
-                             CartItemDetailSerializer, CartItemSerializer, CartItemUpdateSerializer,
-                             MachineSerializer, OrderSerializer,
-                             ResidueSerializer, UserSerializer)
+                             CartItemDetailSerializer,
+                             CartItemUpdateSerializer, MachineSerializer,
+                             OrderSerializer, ResidueSerializer,
+                             UserSerializer)
 
 
 class registerUser(APIView):
@@ -263,3 +264,13 @@ class CartItemView(generics.RetrieveUpdateDestroyAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class CartCheckoutView(APIView):
+    def get(self, request, *args, **kwargs):
+        cart = request.user.cart
+        for item in cart.get_items():
+            Order.objects.create(customer=request.user, machine=item.machine, quantity=item.quantity, complete=False)
+            item.delete()
+
+        return Response(status=status.HTTP_200_OK)
