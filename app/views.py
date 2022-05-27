@@ -9,9 +9,9 @@ from rest_framework.views import APIView
 
 from app.models import CartItem, Machine, Order, Residue, User
 from app.serializers import (AddUser, CartItemCreateSerializer,
-                             CartItemSerializer, MachineSerializer,
-                             OrderSerializer, ResidueSerializer,
-                             UserSerializer)
+                             CartItemDetailSerializer, CartItemSerializer, CartItemUpdateSerializer,
+                             MachineSerializer, OrderSerializer,
+                             ResidueSerializer, UserSerializer)
 
 
 class registerUser(APIView):
@@ -219,12 +219,7 @@ class Connections(APIView):
 
 class CartView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-
-    def get_serializer_class(self, *args, **kwargs):
-        method = self.request.method
-        if method == 'GET':
-            return CartItemSerializer
-        return CartItemCreateSerializer
+    serializer_class = CartItemDetailSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -236,8 +231,35 @@ class CartView(generics.ListCreateAPIView):
 
         for item in items:
             item['cart'] = cart.id
-            serializer = CartItemSerializer(data=item)
+            serializer = CartItemCreateSerializer(data=item)
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
         return Response(status=status.HTTP_201_CREATED)
+
+
+class CartItemView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CartItemDetailSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return CartItem.objects.filter(cart__user=user)
+
+    def put(self, request, *args, **kwargs):
+        item = self.get_object()
+        cart = item.cart
+        if cart != self.request.user.cart:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            quantity = int(request.data["quantity"])
+            if quantity < 1:
+                raise ValidationError()
+        except (KeyError, TypeError, ValueError, ValidationError):
+            return Response({'quantity': ['quantity should be a positive integer']}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = CartItemUpdateSerializer(instance=item, data={'quantity': quantity})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
