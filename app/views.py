@@ -115,8 +115,8 @@ class Machinelist(viewsets.ReadOnlyModelViewSet):
     model = Machine
     serializer_class = MachineSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['industry__location', 'discount', 'name']
-    search_fields = ('name', 'industry__name')
+    filterset_fields = ['owner__location', 'discount', 'name']
+    search_fields = ('name', 'owner__name')
 
     def get_queryset(self):
         machines = Machine.objects.all()
@@ -214,7 +214,7 @@ class Connections(APIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         connections = []
-        orders = Order.objects.filter(machine__industry=user)
+        orders = Order.objects.filter(machine__owner=user)
         for order in orders:
             if order.status != Order.ACCEPTED:
                 continue
