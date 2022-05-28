@@ -74,53 +74,50 @@ class UserViewset(generics.RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class NewMachinesViewset(APIView):
-    def post(self, request):
-        serializer = MachineSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class MachineViewset(APIView):
-    def get_object(self, pk):
-        try:
-            return Machine.objects.get(pk=pk)
-        except Machine.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk):
-        machine = self.get_object(pk)
-        serializer = MachineSerializer(machine, context={'request': request})
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        machine = self.get_object(pk)
-        serializer = MachineSerializer(
-            machine, data=request.data, partial=True, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        user = self.get_object(pk)
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class Machinelist(viewsets.ReadOnlyModelViewSet):
-
-    model = Machine
+class MachinesView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = MachineSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['owner__location', 'discount', 'name']
     search_fields = ('name', 'owner__name')
 
     def get_queryset(self):
-        machines = Machine.objects.all()
-        return machines
+        user = self.request.user
+        if user.is_industry:
+            return user.machine_set.all()
+        return Machine.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class MachineDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MachineSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_industry:
+            return user.machine_set.all()
+        return Machine.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        machine = self.get_object()
+        if machine.owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(machine, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        machine = self.get_object()
+        if machine.owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        machine.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class NewResiduesViewset(APIView):
@@ -173,8 +170,8 @@ class Residuelist(viewsets.ReadOnlyModelViewSet):
 
 
 class OrdersView(generics.ListCreateAPIView):
-    serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['status']
 

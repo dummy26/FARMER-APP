@@ -22,7 +22,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class MachineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Machine
-        fields = '__all__'
+        fields = ['id', 'owner', 'name', 'description', 'details', 'warranty', 'guarantee', 'loyalty', 'for_sale', 'for_rent', 'sell_price', 'rent_price', 'discount', 'image']
+        read_only_fields = ['id', 'owner']
 
 
 class DeliverySerializer(serializers.ModelSerializer):
