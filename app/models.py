@@ -20,18 +20,18 @@ class User(AbstractUser):
 
 
 class Machine(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
-    industry = models.ForeignKey(User, on_delete=models.CASCADE)
-    price = models.IntegerField(default=0)
     description = models.TextField()
-    fetures = models.TextField()
     details = models.JSONField()
-    discount = models.IntegerField(default=0)  # percentage
-    warrenty = models.IntegerField(default=3)  # number of years
-    loyalty = models.BooleanField(default=False)
+    warranty = models.IntegerField(default=3)  # number of years
     guarantee = models.IntegerField(default=1)  # number of years
-    sell = models.BooleanField(default=True)  # if its for sale
-    rent = models.BooleanField(default=False)  # if its for rent
+    loyalty = models.BooleanField(default=False)
+    for_sale = models.BooleanField(default=True)
+    for_rent = models.BooleanField(default=False)
+    sell_price = models.IntegerField(default=0)
+    rent_price = models.IntegerField(default=0)
+    discount = models.IntegerField(default=0)  # percentage
     image = models.ImageField(upload_to='machine_images/')
 
     def __str__(self):
