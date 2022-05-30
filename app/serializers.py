@@ -26,6 +26,14 @@ class MachineSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'owner']
 
 
+class RentMachineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Machine
+        fields = ['id', 'owner', 'name', 'description', 'rent_price', 'discount', 'image']
+        read_only_fields = ['id', 'owner']
+
+
+
 class DeliverySerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery

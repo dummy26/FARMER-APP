@@ -11,8 +11,9 @@ from app.models import CartItem, Machine, Order, Residue, User
 from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
                              CartItemUpdateSerializer, MachineSerializer,
-                             OrderSerializer, ResidueSerializer,
-                             UserSerializer, UserUpdateSerializer)
+                             OrderSerializer, RentMachineSerializer,
+                             ResidueSerializer, UserSerializer,
+                             UserUpdateSerializer)
 
 
 class registerUser(APIView):
@@ -78,17 +79,34 @@ class MachinesView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MachineSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['owner__location', 'discount', 'name']
+    filterset_fields = ['for_rent', 'owner__location', 'discount', 'name']
     search_fields = ('name', 'owner__name')
+
+    def get_serializer_class(self):
+        method = self.request.method
+        if method == 'GET':
+            for_rent = self.request.query_params.get('for_rent')
+            if for_rent:
+                return RentMachineSerializer
+            return MachineSerializer
+
+        if method == 'POST':
+            if self.request.user.is_industry:
+                return MachineSerializer
+            return RentMachineSerializer
 
     def get_queryset(self):
         user = self.request.user
         if user.is_industry:
             return user.machine_set.all()
+
         return Machine.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        if self.request.user.is_industry:
+            serializer.save(owner=self.request.user)
+        else:
+            serializer.save(owner=self.request.user, for_rent=True)
 
 
 class MachineDetailView(generics.RetrieveUpdateDestroyAPIView):

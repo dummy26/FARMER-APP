@@ -23,7 +23,7 @@ class Machine(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     description = models.TextField()
-    details = models.JSONField()
+    details = models.JSONField(null=True, blank=True)
     warranty = models.IntegerField(default=3)  # number of years
     guarantee = models.IntegerField(default=1)  # number of years
     loyalty = models.BooleanField(default=False)
