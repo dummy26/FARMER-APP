@@ -113,6 +113,22 @@ class MachineDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MachineSerializer
 
+    def get_serializer_class(self):
+        user = self.request.user
+        if user.is_industry:
+            return MachineSerializer
+
+        machine = self.get_object()
+        method = self.request.method
+        if method == 'GET':
+            if machine.owner == user:
+                return RentMachineSerializer
+            return MachineSerializer
+
+        if machine.for_rent:
+            return RentMachineSerializer
+        return MachineSerializer
+
     def get_queryset(self):
         user = self.request.user
         if user.is_industry:
@@ -127,6 +143,7 @@ class MachineDetailView(generics.RetrieveUpdateDestroyAPIView):
         partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(machine, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
