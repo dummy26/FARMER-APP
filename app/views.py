@@ -43,8 +43,7 @@ class login(APIView):
         return Response({"Error": "invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserViewset(generics.RetrieveUpdateDestroyAPIView):
-
+class UsersView(generics.RetrieveUpdateDestroyAPIView):
     def get_permissions(self):
         method = self.request.method
         if method == 'GET':
@@ -162,42 +161,6 @@ class MachineDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ResidueDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Residue.objects.all()
-    serializer_class = ResidueSerializer
-
-    def update(self, request, *args, **kwargs):
-        residue = self.get_object()
-        if residue.owner != request.user:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        partial = kwargs.pop('partial', False)
-        serializer = self.get_serializer(residue, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-    def delete(self, request, **kwargs):
-        residue = self.get_object()
-        if residue.owner != request.user:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        residue.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class ResiduesView(generics.ListCreateAPIView):
-    serializer_class = ResidueSerializer
-    queryset = Residue.objects.all()
-
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['type_of_residue']
-    search_fields = ('type_of_residue', 'quantity')
-
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-
-
 class OrdersView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
@@ -207,20 +170,6 @@ class OrdersView(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         return Order.objects.filter(machine__owner=user)
-
-    def perform_create(self, serializer):
-        serializer.save(customer=self.request.user)
-
-
-class RentOrdersView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = RentOrderSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['status']
-
-    def get_queryset(self):
-        user = self.request.user
-        return RentOrder.objects.filter(machine__owner=user)
 
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
@@ -247,6 +196,58 @@ class OrderDetailView(generics.UpdateAPIView):
         serializer.save()
 
         return Response(serializer.data)
+
+
+class RentOrdersView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RentOrderSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['status']
+
+    def get_queryset(self):
+        user = self.request.user
+        return RentOrder.objects.filter(machine__owner=user)
+
+    def perform_create(self, serializer):
+        serializer.save(customer=self.request.user)
+
+
+class ResiduesView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ResidueSerializer
+    queryset = Residue.objects.all()
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['type_of_residue']
+    search_fields = ('type_of_residue', 'quantity')
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class ResidueDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ResidueSerializer
+    queryset = Residue.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        residue = self.get_object()
+        if residue.owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(residue, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, **kwargs):
+        residue = self.get_object()
+        if residue.owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        residue.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ResidueOrdersView(generics.ListCreateAPIView):
@@ -372,6 +373,8 @@ class CartItemView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class CartCheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         cart = request.user.cart
         for item in cart.get_items():
