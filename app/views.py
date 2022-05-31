@@ -289,15 +289,27 @@ class Connections(APIView):
         if not user.is_industry:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        connections = []
+        connections = set()
         orders = Order.objects.filter(machine__owner=user)
         for order in orders:
             if order.status != Order.ACCEPTED:
                 continue
 
-            customer = order.customer
-            if customer not in connections:
-                connections.append(customer)
+            connections.add(order.customer)
+
+        rent_orders = RentOrder.objects.filter(machine__owner=user)
+        for rent_order in rent_orders:
+            if rent_order.status != RentOrder.ACCEPTED:
+                continue
+
+            connections.add(rent_order.customer)
+
+        residues_orders = ResidueOrder.objects.filter(customer=user)
+        for residue_order in residues_orders:
+            if residue_order.status != ResidueOrder.ACCEPTED:
+                continue
+
+            connections.add(residue_order.residue.owner)
 
         serializer = UserSerializer(connections, many=True)
         return Response(serializer.data)
