@@ -1,6 +1,5 @@
-from django.contrib.auth import authenticate
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, status
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
@@ -33,19 +32,7 @@ class registerUser(APIView):
         return Response(serializer.data)
 
 
-class login(APIView):
-    def post(self, request):
-        data = request.data
-        username = data['username']
-        password = data['password']
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            serializer = UserSerializer(user)
-            return Response(serializer.data)
-        return Response({"Error": "invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UsersView(generics.RetrieveUpdateDestroyAPIView):
+class UsersView(generics.RetrieveAPIView):
     def get_permissions(self):
         method = self.request.method
         if method == 'GET':
@@ -57,38 +44,32 @@ class UsersView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    def update(self, request, *args, **kwargs):
-        if request.user != self.get_object():
-            return Response(status=status.HTTP_403_FORBIDDEN)
 
-        serializer = UserUpdateSerializer(instance=request.user, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def destroy(self, request, *args, **kwargs):
-        if request.user != self.get_object():
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        request.user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class ProfileView(generics.RetrieveAPIView):
+class ProfileView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
 
     def get_object(self):
         return self.request.user
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        serializer = UserUpdateSerializer(instance=request.user, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        request.user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class MachinesView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MachineSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend]
     filterset_fields = ['for_rent', 'owner__location', 'discount', 'name']
-    search_fields = ('name', 'owner__name')
 
     def get_serializer_class(self):
         method = self.request.method
@@ -182,7 +163,7 @@ class OrderDetailView(generics.UpdateAPIView):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
 
-    def patch(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         machine = self.get_object().machine
         if machine.owner != request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -243,11 +224,15 @@ class RentOrderDetailView(generics.UpdateAPIView):
 class ResiduesView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ResidueSerializer
-    queryset = Residue.objects.all()
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_industry:
+            return Residue.objects.all()
+        return Residue.objects.filter(owner=user)
+
+    filter_backends = [DjangoFilterBackend]
     filterset_fields = ['type_of_residue']
-    search_fields = ('type_of_residue', 'quantity')
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
