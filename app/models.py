@@ -108,6 +108,25 @@ class RentOrder(models.Model):
         return f'{self.customer.name} {self.machine.name} {self.num_of_days} {str(self.status)}'
 
 
+class ResidueOrder(models.Model):
+    PENDING = 'pending'
+    ACCEPTED = 'accepted'
+    REJECTED = 'rejected'
+
+    STATUS_CHOICES = [
+        (PENDING, 'Pending'),
+        (ACCEPTED, 'Accepted'),
+        (REJECTED, 'Rejected'),
+    ]
+
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    residue = models.ForeignKey(Residue, on_delete=models.CASCADE)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=30, default=PENDING)
+
+    def __str__(self):
+        return f'{self.customer.name} {self.residue.type_of_residue} {str(self.status)}'
+
+
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 

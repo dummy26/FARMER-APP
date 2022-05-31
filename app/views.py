@@ -6,12 +6,12 @@ from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
 
-from app.models import CartItem, Machine, Order, RentOrder, Residue, User
+from app.models import CartItem, Machine, Order, RentOrder, Residue, ResidueOrder, User
 from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
                              CartItemUpdateSerializer, MachineSerializer,
                              OrderSerializer, RentMachineSerializer,
-                             RentOrderSerializer, ResidueSerializer,
+                             RentOrderSerializer, ResidueOrderCreateSerializer, ResidueOrderSerializer, ResidueSerializer,
                              UserSerializer, UserUpdateSerializer)
 
 
@@ -238,6 +238,46 @@ class OrderDetailView(generics.UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        return Response(serializer.data)
+
+
+class ResidueOrdersView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        method = self.request.method
+        if method == 'POST':
+            return ResidueOrderCreateSerializer
+        return ResidueOrderSerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['status']
+
+    def get_queryset(self):
+        user = self.request.user
+        return ResidueOrder.objects.filter(residue__owner=user)
+
+    def perform_create(self, serializer):
+        serializer.save(customer=self.request.user)
+
+
+class ResidueOrderDetailView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ResidueOrderCreateSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return ResidueOrder.objects.filter(residue__owner=user)
+
+    def update(self, request, *args, **kwargs):
+        residue_order = self.get_object()
+        if residue_order.residue.owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(residue_order, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
 
 
