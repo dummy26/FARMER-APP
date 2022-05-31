@@ -87,6 +87,26 @@ class Order(models.Model):
         return f'{self.customer.name} {self.machine.name} {self.quantity} {str(self.status)}'
 
 
+class RentOrder(models.Model):
+    PENDING = 'pending'
+    ACCEPTED = 'accepted'
+    REJECTED = 'rejected'
+
+    STATUS_CHOICES = [
+        (PENDING, 'Pending'),
+        (ACCEPTED, 'Accepted'),
+        (REJECTED, 'Rejected'),
+    ]
+
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=30, default=PENDING)
+    num_of_days = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f'{self.customer.name} {self.machine.name} {self.num_of_days} {str(self.status)}'
+
+
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 

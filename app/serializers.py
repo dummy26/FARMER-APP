@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from app.models import (Bookmark, CartItem, Delivery, Machine, Order, Residue,
-                        User)
+from app.models import (Bookmark, CartItem, Delivery, Machine, Order,
+                        RentOrder, Residue, User)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -33,7 +33,6 @@ class RentMachineSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'owner']
 
 
-
 class DeliverySerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
@@ -55,8 +54,15 @@ class ResidueSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['customer', 'machine', 'status']
-        read_only_fields = ['customer']
+        fields = ['id', 'customer', 'machine', 'quantity', 'status']
+        read_only_fields = ['id', 'customer']
+
+
+class RentOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RentOrder
+        fields = ['id', 'customer', 'machine', 'num_of_days', 'status']
+        read_only_fields = ['id', 'customer']
 
 
 class CartItemCreateSerializer(serializers.ModelSerializer):

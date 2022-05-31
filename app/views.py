@@ -7,13 +7,13 @@ from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
 
-from app.models import CartItem, Machine, Order, Residue, User
+from app.models import CartItem, Machine, Order, RentOrder, Residue, User
 from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
                              CartItemUpdateSerializer, MachineSerializer,
                              OrderSerializer, RentMachineSerializer,
-                             ResidueSerializer, UserSerializer,
-                             UserUpdateSerializer)
+                             RentOrderSerializer, ResidueSerializer,
+                             UserSerializer, UserUpdateSerializer)
 
 
 class registerUser(APIView):
@@ -212,7 +212,21 @@ class OrdersView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return user.order_set.all()
+        return Order.objects.filter(machine__owner=user)
+
+    def perform_create(self, serializer):
+        serializer.save(customer=self.request.user)
+
+
+class RentOrdersView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RentOrderSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['status']
+
+    def get_queryset(self):
+        user = self.request.user
+        return RentOrder.objects.filter(machine__owner=user)
 
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
@@ -224,6 +238,10 @@ class OrderDetailView(generics.UpdateAPIView):
     queryset = Order.objects.all()
 
     def patch(self, request, *args, **kwargs):
+        machine = self.get_object().machine
+        if machine.owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         try:
             data = {"status": request.data['status']}
         except KeyError:

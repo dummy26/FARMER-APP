@@ -5,8 +5,9 @@ from rest_framework.authtoken import views as auth_views
 
 from app.views import (CartCheckoutView, CartItemView, CartView, Connections,
                        MachineDetailView, MachinesView, NewResiduesViewset,
-                       OrderDetailView, OrdersView, Residuelist,
-                       ResidueViewset, UserViewset, login, registerUser)
+                       OrderDetailView, OrdersView, RentOrdersView,
+                       Residuelist, ResidueViewset, UserViewset, login,
+                       registerUser)
 
 urlpatterns = [
     path('register/', registerUser.as_view(), name='register'),
@@ -23,6 +24,7 @@ urlpatterns = [
     path('cart/checkout', CartCheckoutView.as_view(), name='cart-checkout'),
     path('orders/<int:pk>', OrderDetailView.as_view(), name='order-detail'),
     path('orders/', OrdersView.as_view(), name='orders'),
+    path('orders/rent', RentOrdersView.as_view(), name='rent-orders'),
     path('connections/', Connections.as_view(), name='connections'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
