@@ -74,6 +74,14 @@ class UserViewset(generics.RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class ProfileView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
 class MachinesView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MachineSerializer
