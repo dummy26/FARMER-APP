@@ -4,9 +4,9 @@ from django.urls import path
 from rest_framework.authtoken import views as auth_views
 
 from app.views import (CartCheckoutView, CartItemView, CartView, Connections,
-                       MachineDetailView, MachinesView, NewResiduesViewset,
+                       MachineDetailView, MachinesView, ResidueDetailView,
                        OrderDetailView, OrdersView, RentOrdersView,
-                       ResiduesView, ResidueViewset, UserViewset, login,
+                       ResiduesView, UserViewset, login,
                        registerUser)
 
 urlpatterns = [
@@ -15,9 +15,8 @@ urlpatterns = [
     path('users/<int:pk>', UserViewset.as_view(), name='user'),
     path('machines/', MachinesView.as_view(), name='machines'),
     path('machines/<int:pk>', MachineDetailView.as_view(), name='machine'),
-    path('residue/<int:pk>', ResidueViewset.as_view(), name='residue'),
-    path('residue/', NewResiduesViewset.as_view(), name='add-residue'),
     path('residues/', ResiduesView.as_view(), name='residues'),
+    path('residues/<int:pk>', ResidueDetailView.as_view(), name='residue'),
     path('cart/', CartView.as_view(), name='cart'),
     path('cart-items/<int:pk>', CartItemView.as_view(), name='cart-items'),
     path('cart/checkout', CartCheckoutView.as_view(), name='cart-checkout'),

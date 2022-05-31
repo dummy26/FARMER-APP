@@ -1,7 +1,6 @@
 from django.contrib.auth import authenticate
-from django.http.response import Http404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, status, viewsets
+from rest_framework import filters, generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
@@ -155,39 +154,27 @@ class MachineDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class NewResiduesViewset(APIView):
-    def post(self, request):
-        serializer = ResidueSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ResidueDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Residue.objects.all()
+    serializer_class = ResidueSerializer
 
+    def update(self, request, *args, **kwargs):
+        residue = self.get_object()
+        if residue.owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
-class ResidueViewset(APIView):
-    def get_object(self, pk):
-        try:
-            return Residue.objects.get(pk=pk)
-        except Residue.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk):
-        residue = self.get_object(pk)
-        serializer = ResidueSerializer(residue)
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(residue, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
 
-    def put(self, request, pk):
-        residue = self.get_object(pk)
-        serializer = ResidueSerializer(
-            residue, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, **kwargs):
+        residue = self.get_object()
+        if residue.owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self, request, pk):
-        user = self.get_object(pk)
-        user.delete()
+        residue.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
