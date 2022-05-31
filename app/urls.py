@@ -5,10 +5,10 @@ from rest_framework.authtoken import views as auth_views
 
 from app.views import (CartCheckoutView, CartItemView, CartView, Connections,
                        MachineDetailView, MachinesView, OrderDetailView,
-                       OrdersView, ProfileView, RentOrdersView,
-                       ResidueDetailView, ResidueOrderDetailView,
-                       ResidueOrdersView, ResiduesView, UsersView, login,
-                       registerUser)
+                       OrdersView, ProfileView, RentOrderDetailView,
+                       RentOrdersView, ResidueDetailView,
+                       ResidueOrderDetailView, ResidueOrdersView, ResiduesView,
+                       UsersView, login, registerUser)
 
 urlpatterns = [
     path('register/', registerUser.as_view(), name='register'),
@@ -24,7 +24,8 @@ urlpatterns = [
     path('cart/checkout', CartCheckoutView.as_view(), name='cart-checkout'),
     path('orders/', OrdersView.as_view(), name='orders'),
     path('orders/<int:pk>', OrderDetailView.as_view(), name='order-detail'),
-    path('orders/rent', RentOrdersView.as_view(), name='rent-orders'),
+    path('rent-orders/', RentOrdersView.as_view(), name='rent-orders'),
+    path('rent-orders/<int:pk>', RentOrderDetailView.as_view(), name='rent-order'),
     path('residue-orders/', ResidueOrdersView.as_view(), name='residue-orders'),
     path('residue-orders/<int:pk>', ResidueOrderDetailView.as_view(), name='residue-order'),
     path('connections/', Connections.as_view(), name='connections'),

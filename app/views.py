@@ -6,12 +6,14 @@ from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
 
-from app.models import CartItem, Machine, Order, RentOrder, Residue, ResidueOrder, User
+from app.models import (CartItem, Machine, Order, RentOrder, Residue,
+                        ResidueOrder, User)
 from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
                              CartItemUpdateSerializer, MachineSerializer,
                              OrderSerializer, RentMachineSerializer,
-                             RentOrderSerializer, ResidueOrderCreateSerializer, ResidueOrderSerializer, ResidueSerializer,
+                             RentOrderSerializer, ResidueOrderCreateSerializer,
+                             ResidueOrderSerializer, ResidueSerializer,
                              UserSerializer, UserUpdateSerializer)
 
 
@@ -212,6 +214,32 @@ class RentOrdersView(generics.ListCreateAPIView):
         serializer.save(customer=self.request.user)
 
 
+class RentOrderDetailView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RentOrderSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['status']
+
+    def get_queryset(self):
+        return RentOrder.objects.filter(machine__owner=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        rent_order = self.get_object()
+        if rent_order.machine.owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            data = {"status": request.data['status']}
+        except KeyError:
+            raise ValidationError()
+
+        serializer = self.get_serializer(rent_order, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
+
 class ResiduesView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ResidueSerializer
@@ -283,8 +311,12 @@ class ResidueOrderDetailView(generics.UpdateAPIView):
         if residue_order.residue.owner != request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        partial = kwargs.pop('partial', False)
-        serializer = self.get_serializer(residue_order, data=request.data, partial=partial)
+        try:
+            data = {"status": request.data['status']}
+        except KeyError:
+            raise ValidationError()
+
+        serializer = self.get_serializer(residue_order, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
