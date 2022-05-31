@@ -6,7 +6,7 @@ from rest_framework.authtoken import views as auth_views
 from app.views import (CartCheckoutView, CartItemView, CartView, Connections,
                        MachineDetailView, MachinesView, NewResiduesViewset,
                        OrderDetailView, OrdersView, RentOrdersView,
-                       Residuelist, ResidueViewset, UserViewset, login,
+                       ResiduesView, ResidueViewset, UserViewset, login,
                        registerUser)
 
 urlpatterns = [
@@ -17,8 +17,7 @@ urlpatterns = [
     path('machines/<int:pk>', MachineDetailView.as_view(), name='machine'),
     path('residue/<int:pk>', ResidueViewset.as_view(), name='residue'),
     path('residue/', NewResiduesViewset.as_view(), name='add-residue'),
-    path('residues/',
-         Residuelist.as_view({'get': 'list'}), name='residue-list'),
+    path('residues/', ResiduesView.as_view(), name='residues'),
     path('cart/', CartView.as_view(), name='cart'),
     path('cart-items/<int:pk>', CartItemView.as_view(), name='cart-items'),
     path('cart/checkout', CartCheckoutView.as_view(), name='cart-checkout'),

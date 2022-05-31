@@ -59,6 +59,7 @@ class Bookmark(models.Model):
 
 
 class Residue(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     type_of_residue = models.CharField(max_length=200)
     price = models.IntegerField(default=0)
     quantity = models.IntegerField(default=1)

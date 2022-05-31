@@ -191,17 +191,16 @@ class ResidueViewset(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class Residuelist(viewsets.ReadOnlyModelViewSet):
-
-    model = Residue
+class ResiduesView(generics.ListCreateAPIView):
     serializer_class = ResidueSerializer
+    queryset = Residue.objects.all()
+
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['type_of_residue']
     search_fields = ('type_of_residue', 'quantity')
 
-    def get_queryset(self):
-        residues = Residue.objects.all()
-        return residues
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
 class OrdersView(generics.ListCreateAPIView):
