@@ -45,11 +45,19 @@ class BookmarkSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ResidueCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Residue
+        fields = ['owner', 'type_of_residue', 'price', 'quantity']
+        read_only_fields = ['owner']
+
+
 class ResidueSerializer(serializers.ModelSerializer):
+    owner = UserSerializer()
+
     class Meta:
         model = Residue
         fields = ['id', 'owner', 'type_of_residue', 'price', 'quantity']
-        read_only_fields = ['id', 'owner']
 
 
 class OrderSerializer(serializers.ModelSerializer):

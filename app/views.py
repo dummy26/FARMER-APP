@@ -11,7 +11,8 @@ from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
                              CartItemUpdateSerializer, MachineSerializer,
                              OrderSerializer, RentMachineSerializer,
-                             RentOrderSerializer, ResidueOrderCreateSerializer,
+                             RentOrderSerializer, ResidueCreateSerializer,
+                             ResidueOrderCreateSerializer,
                              ResidueOrderSerializer, ResidueSerializer,
                              UserSerializer, UserUpdateSerializer)
 
@@ -223,7 +224,12 @@ class RentOrderDetailView(generics.UpdateAPIView):
 
 class ResiduesView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = ResidueSerializer
+
+    def get_serializer_class(self):
+        method = self.request.method
+        if method == 'GET':
+            return ResidueSerializer
+        return ResidueCreateSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -240,8 +246,13 @@ class ResiduesView(generics.ListCreateAPIView):
 
 class ResidueDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = ResidueSerializer
     queryset = Residue.objects.all()
+
+    def get_serializer_class(self):
+        method = self.request.method
+        if method == 'GET':
+            return ResidueSerializer
+        return ResidueCreateSerializer
 
     def update(self, request, *args, **kwargs):
         residue = self.get_object()
