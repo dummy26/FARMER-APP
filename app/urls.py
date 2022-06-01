@@ -3,16 +3,17 @@ from django.conf.urls.static import static
 from django.urls import path
 from rest_framework.authtoken import views as auth_views
 
-from app.views import (CartCheckoutView, CartItemView, CartView, Connections,
-                       MachineDetailView, MachinesView, OrderDetailView,
-                       OrdersView, ProfileView, RentOrderDetailView,
-                       RentOrdersView, ResidueDetailView,
+from app.views import (CartCheckoutView, CartItemView, CartView,
+                       ChangePasswordView, Connections, MachineDetailView,
+                       MachinesView, OrderDetailView, OrdersView, ProfileView,
+                       RentOrderDetailView, RentOrdersView, ResidueDetailView,
                        ResidueOrderDetailView, ResidueOrdersView, ResiduesView,
                        UsersView, registerUser)
 
 urlpatterns = [
     path('register/', registerUser.as_view(), name='register'),
     path('users/<int:pk>', UsersView.as_view(), name='user'),
+    path('users/change-password', ChangePasswordView.as_view(), name='change-password'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('machines/', MachinesView.as_view(), name='machines'),
     path('machines/<int:pk>', MachineDetailView.as_view(), name='machine'),

@@ -1,5 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
+from rest_framework.generics import UpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
@@ -9,7 +10,8 @@ from app.models import (CartItem, Machine, Order, RentOrder, Residue,
                         ResidueOrder, User)
 from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
-                             CartItemUpdateSerializer, MachineSerializer,
+                             CartItemUpdateSerializer,
+                             ChangePasswordSerializer, MachineSerializer,
                              OrderSerializer, RentMachineSerializer,
                              RentOrderSerializer, ResidueCreateSerializer,
                              ResidueOrderCreateSerializer,
@@ -64,6 +66,17 @@ class ProfileView(generics.RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         request.user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ChangePasswordView(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
+
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 class MachinesView(generics.ListCreateAPIView):
