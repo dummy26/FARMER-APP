@@ -83,13 +83,14 @@ class MachinesView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MachineSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['for_rent', 'owner__location', 'discount', 'name']
+    filterset_fields = ['for_rent', 'for_sale', 'owner__location', 'discount', 'name']
 
     def get_serializer_class(self):
         method = self.request.method
         if method == 'GET':
             for_rent = self.request.query_params.get('for_rent')
-            if for_rent:
+            own = self.request.query_params.get('own')
+            if for_rent or own:
                 return RentMachineSerializer
             return MachineSerializer
 
@@ -106,7 +107,7 @@ class MachinesView(generics.ListCreateAPIView):
         own = self.request.query_params.get('own')
         if own:
             return Machine.objects.filter(owner=user)
-        return Machine.objects.all()
+        return Machine.objects.exclude(owner=user)
 
     def perform_create(self, serializer):
         if self.request.user.is_industry:
