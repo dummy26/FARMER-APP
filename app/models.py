@@ -15,6 +15,56 @@ class User(AbstractUser):
     first_name = None
     last_name = None
 
+    def get_connections(self):
+        if self.is_industry:
+            return self.get_industry_connections()
+        return self.get_farmer_connections()
+
+    def get_industry_connections(self):
+        connections = set()
+
+        orders = Order.objects.filter(machine__owner=self)
+        for order in orders:
+            if order.status == Order.ACCEPTED:
+                connections.add(order.customer)
+
+        rent_orders = RentOrder.objects.filter(machine__owner=self)
+        for rent_order in rent_orders:
+            if rent_order.status == RentOrder.ACCEPTED:
+                connections.add(rent_order.customer)
+
+        residues_orders = ResidueOrder.objects.filter(customer=self)
+        for residue_order in residues_orders:
+            if residue_order.status == ResidueOrder.ACCEPTED:
+                connections.add(residue_order.residue.owner)
+
+        return connections
+
+    def get_farmer_connections(self):
+        connections = set()
+
+        orders = Order.objects.filter(customer=self)
+        for order in orders:
+            if order.status == Order.ACCEPTED:
+                connections.add(order.machine.owner)
+
+        rent_orders = RentOrder.objects.filter(customer=self)
+        for rent_order in rent_orders:
+            if rent_order.status == RentOrder.ACCEPTED:
+                connections.add(rent_order.machine.owner)
+
+        rent_orders = RentOrder.objects.filter(machine__owner=self)
+        for rent_order in rent_orders:
+            if rent_order.status == RentOrder.ACCEPTED:
+                connections.add(rent_order.customer)
+
+        residues_orders = ResidueOrder.objects.filter(residue__owner=self)
+        for residue_order in residues_orders:
+            if residue_order.status == ResidueOrder.ACCEPTED:
+                connections.add(residue_order.customer)
+
+        return connections
+
     def __str__(self):
         return self.username
 

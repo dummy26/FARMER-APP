@@ -342,31 +342,7 @@ class Connections(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        if not user.is_industry:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        connections = set()
-        orders = Order.objects.filter(machine__owner=user)
-        for order in orders:
-            if order.status != Order.ACCEPTED:
-                continue
-
-            connections.add(order.customer)
-
-        rent_orders = RentOrder.objects.filter(machine__owner=user)
-        for rent_order in rent_orders:
-            if rent_order.status != RentOrder.ACCEPTED:
-                continue
-
-            connections.add(rent_order.customer)
-
-        residues_orders = ResidueOrder.objects.filter(customer=user)
-        for residue_order in residues_orders:
-            if residue_order.status != ResidueOrder.ACCEPTED:
-                continue
-
-            connections.add(residue_order.residue.owner)
-
+        connections = user.get_connections()
         serializer = UserSerializer(connections, many=True)
         return Response(serializer.data)
 
