@@ -90,7 +90,9 @@ class MachinesView(generics.ListCreateAPIView):
         if method == 'GET':
             for_rent = self.request.query_params.get('for_rent')
             own = self.request.query_params.get('own')
-            if for_rent or own:
+
+            for_sale = self.request.query_params.get('for_sale')
+            if not (for_sale and for_sale.lower() == 'true') and (for_rent and for_rent.lower() == 'true') or (own and own.lower() == 'true'):
                 return RentMachineSerializer
             return MachineSerializer
 
