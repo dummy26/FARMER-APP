@@ -103,13 +103,16 @@ class MachinesView(generics.ListCreateAPIView):
         if user.is_industry:
             return user.machine_set.all()
 
+        own = self.request.query_params.get('own')
+        if own:
+            return Machine.objects.filter(owner=user)
         return Machine.objects.all()
 
     def perform_create(self, serializer):
         if self.request.user.is_industry:
             serializer.save(owner=self.request.user)
         else:
-            serializer.save(owner=self.request.user, for_rent=True)
+            serializer.save(owner=self.request.user, for_sale=False, for_rent=True)
 
 
 class MachineDetailView(generics.RetrieveUpdateDestroyAPIView):
