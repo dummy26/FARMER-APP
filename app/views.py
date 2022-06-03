@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 from app.models import (CartItem, Machine, Order, RentOrder, Residue,
                         ResidueOrder, User)
+from app.permissions import IsFarmer
 from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
                              CartItemUpdateSerializer,
@@ -243,6 +244,14 @@ class RentOrderDetailView(generics.UpdateAPIView):
 
 class ResiduesView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        permission_classes = [IsAuthenticated]
+        method = self.request.method
+
+        if method == 'POST':
+            permission_classes.append(IsFarmer)
+        return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
         method = self.request.method
