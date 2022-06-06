@@ -94,6 +94,7 @@ class ResidueOrderCreateSerializer(serializers.ModelSerializer):
 
 class ResidueOrderSerializer(serializers.ModelSerializer):
     residue = ResidueSerializer()
+    customer = UserSerializer()
 
     class Meta:
         model = ResidueOrder
