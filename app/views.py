@@ -13,8 +13,9 @@ from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
                              CartItemUpdateSerializer,
                              ChangePasswordSerializer, MachineSerializer,
-                             OrderSerializer, RentMachineSerializer,
-                             RentOrderSerializer, ResidueCreateSerializer,
+                             OrderDetailSerializer, OrderSerializer,
+                             RentMachineSerializer, RentOrderSerializer,
+                             ResidueCreateSerializer,
                              ResidueOrderCreateSerializer,
                              ResidueOrderSerializer, ResidueSerializer,
                              UserSerializer, UserUpdateSerializer)
@@ -167,7 +168,14 @@ class MachineDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class OrdersView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = OrderSerializer
+
+    def get_serializer_class(self):
+        method = self.request.method
+
+        if method == 'GET':
+            return OrderDetailSerializer
+        return OrderSerializer
+
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['status']
 

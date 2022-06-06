@@ -68,6 +68,16 @@ class OrderSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'customer']
 
 
+class OrderDetailSerializer(serializers.ModelSerializer):
+    customer = UserSerializer()
+    machine = MachineSerializer()
+
+    class Meta:
+        model = Order
+        fields = ['id', 'customer', 'machine', 'quantity', 'status']
+        read_only_fields = ['id', 'customer']
+
+
 class RentOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = RentOrder
