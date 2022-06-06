@@ -269,9 +269,12 @@ class ResiduesView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        sold_residues = [order.residue.id for order in ResidueOrder.objects.all() if order.status == ResidueOrder.ACCEPTED]
+        residues = Residue.objects.exclude(pk__in=sold_residues)
+
         if user.is_industry:
-            return Residue.objects.all()
-        return Residue.objects.filter(owner=user)
+            return residues
+        return residues.filter(owner=user)
 
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['type_of_residue']
