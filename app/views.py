@@ -380,6 +380,12 @@ class CartView(generics.ListCreateAPIView):
         items = request.data['items']
 
         for item in items:
+            existing_item = CartItem.objects.filter(machine__id=item['machine'])
+            if len(existing_item) > 0:
+                existing_item[0].quantity += item['quantity']
+                existing_item[0].save()
+                continue
+
             item['cart'] = cart.id
             serializer = CartItemCreateSerializer(data=item)
             serializer.is_valid(raise_exception=True)
