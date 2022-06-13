@@ -12,7 +12,7 @@ from app.permissions import IsFarmer
 from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
                              CartItemUpdateSerializer,
-                             ChangePasswordSerializer, MachineSerializer,
+                             ChangePasswordSerializer, MachineSerializer, OrderCustomerSerializer,
                              OrderDetailSerializer, OrderSerializer,
                              RentMachineSerializer, RentOrderSerializer,
                              ResidueCreateSerializer,
@@ -174,9 +174,13 @@ class OrdersView(generics.ListCreateAPIView):
 
     def get_serializer_class(self):
         method = self.request.method
+        user = self.request.user
 
         if method == 'GET':
-            return OrderDetailSerializer
+            if user.is_industry:
+                return OrderDetailSerializer
+            return OrderCustomerSerializer
+
         return OrderSerializer
 
     filter_backends = [DjangoFilterBackend]
@@ -184,7 +188,10 @@ class OrdersView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Order.objects.filter(machine__owner=user)
+        if user.is_industry:
+            return Order.objects.filter(machine__owner=user)
+
+        return Order.objects.filter(customer=user)
 
     def perform_create(self, serializer):
         machine = serializer.validated_data['machine']
