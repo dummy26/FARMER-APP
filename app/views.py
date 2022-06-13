@@ -82,7 +82,7 @@ class ChangePasswordView(UpdateAPIView):
 
 
 class MachinesView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = MachineSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['for_rent', 'for_sale', 'owner__location', 'discount', 'name']
@@ -105,6 +105,9 @@ class MachinesView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if user.is_anonymous:
+            return Machine.objects.filter(for_sale=True)
+
         if user.is_industry:
             return user.machine_set.all()
 
