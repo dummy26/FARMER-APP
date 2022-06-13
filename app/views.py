@@ -187,6 +187,10 @@ class OrdersView(generics.ListCreateAPIView):
         return Order.objects.filter(machine__owner=user)
 
     def perform_create(self, serializer):
+        machine = serializer.validated_data['machine']
+        machine.quantity -= 1
+        machine.save()
+
         serializer.save(customer=self.request.user)
 
 
@@ -224,6 +228,10 @@ class RentOrdersView(generics.ListCreateAPIView):
         return RentOrder.objects.filter(machine__owner=user)
 
     def perform_create(self, serializer):
+        machine = serializer.validated_data['machine']
+        machine.quantity -= 1
+        machine.save()
+
         serializer.save(customer=self.request.user)
 
 
