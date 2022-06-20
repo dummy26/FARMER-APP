@@ -8,7 +8,7 @@ from app.views import (CartCheckoutView, CartItemView, CartView,
                        MachinesView, OrderDetailView, OrdersView, ProfileView,
                        RentOrderDetailView, RentOrdersView, ResidueDetailView,
                        ResidueOrderDetailView, ResidueOrdersView, ResiduesView,
-                       UsersView, registerUser)
+                       ResidueTypeView, UsersView, registerUser)
 
 urlpatterns = [
     path('register/', registerUser.as_view(), name='register'),
@@ -18,6 +18,7 @@ urlpatterns = [
     path('machines/', MachinesView.as_view(), name='machines'),
     path('machines/<int:pk>', MachineDetailView.as_view(), name='machine'),
     path('residues/', ResiduesView.as_view(), name='residues'),
+    path('residues/type', ResidueTypeView.as_view(), name='residue-type'),
     path('residues/<int:pk>', ResidueDetailView.as_view(), name='residue'),
     path('cart/', CartView.as_view(), name='cart'),
     path('cart-items/<int:pk>', CartItemView.as_view(), name='cart-items'),

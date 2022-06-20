@@ -12,10 +12,10 @@ from app.permissions import IsFarmer
 from app.serializers import (CartItemCreateSerializer,
                              CartItemDetailSerializer,
                              CartItemUpdateSerializer,
-                             ChangePasswordSerializer, MachineSerializer, OrderCustomerSerializer,
-                             OrderDetailSerializer, OrderSerializer,
-                             RentMachineSerializer, RentOrderSerializer,
-                             ResidueCreateSerializer,
+                             ChangePasswordSerializer, MachineSerializer,
+                             OrderCustomerSerializer, OrderDetailSerializer,
+                             OrderSerializer, RentMachineSerializer,
+                             RentOrderSerializer, ResidueCreateSerializer,
                              ResidueOrderCreateSerializer,
                              ResidueOrderSerializer, ResidueSerializer,
                              UserSerializer, UserUpdateSerializer)
@@ -299,6 +299,12 @@ class ResiduesView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+
+class ResidueTypeView(APIView):
+    def get(self, request):
+        types = [type[1] for type in Residue.CHOICES]
+        return Response(types)
 
 
 class ResidueDetailView(generics.RetrieveUpdateDestroyAPIView):

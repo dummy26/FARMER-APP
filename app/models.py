@@ -110,8 +110,24 @@ class Bookmark(models.Model):
 
 
 class Residue(models.Model):
+    RICE_STRAW = 'Rice Straw'
+    WHEAT_STRAW = 'Wheat Straw'
+    RICE_HUSK = 'Rice Husk'
+    CORN_STOVER = 'Corn Stover'
+    FORESTRY_RESIDUES = 'Forestry Residues'
+    OTHERS = 'Others'
+
+    CHOICES = [
+        (RICE_STRAW, RICE_STRAW),
+        (WHEAT_STRAW, WHEAT_STRAW),
+        (RICE_HUSK, RICE_HUSK),
+        (CORN_STOVER, CORN_STOVER),
+        (FORESTRY_RESIDUES, FORESTRY_RESIDUES),
+        (OTHERS, OTHERS)
+    ]
+
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    type_of_residue = models.CharField(max_length=200)
+    type_of_residue = models.CharField(choices=CHOICES, max_length=200, default=RICE_STRAW)
     price = models.IntegerField(default=0)
     quantity = models.IntegerField(default=1)
 
