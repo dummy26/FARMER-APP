@@ -150,9 +150,17 @@ class Order(models.Model):
     machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     status = models.CharField(choices=STATUS_CHOICES, max_length=30, default=PENDING)
+    name_of_recipient = models.CharField(max_length=30, default="Reciever")
+    phone = models.IntegerField(default=0)
+    state = models.CharField(max_length=30, default="State")
+    pincode = models.IntegerField(default=000000)
+    city = models.CharField(max_length=15, default="City" )
+    address = models.CharField(max_length=300, default="House Address")
+    
+    
 
     def __str__(self):
-        return f'{self.customer.name} {self.machine.name} {self.quantity} {str(self.status)}'
+        return f'{self.customer.name} {self.machine.name} {self.quantity} {str(self.status)} {self.name_of_recipient} {self.phone} {self.state} {self.pincode} {self.city} {self.address}'
 
 
 class RentOrder(models.Model):
