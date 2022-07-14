@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
+from django.core.validators import MinValueValidator,MaxValueValidator
 
 
 class User(AbstractUser):
@@ -151,9 +152,9 @@ class Order(models.Model):
     quantity = models.IntegerField(default=1)
     status = models.CharField(choices=STATUS_CHOICES, max_length=30, default=PENDING)
     name_of_recipient = models.CharField(max_length=30, default="Reciever")
-    phone = models.IntegerField(default=0)
+    phone = models.IntegerField('Phone', validators=[MaxValueValidator(9999999999),MinValueValidator(1000000000)])
     state = models.CharField(max_length=30, default="State")
-    pincode = models.IntegerField(default=000000)
+    pincode = models.IntegerField('Pincode', validators=[MaxValueValidator(999999),MinValueValidator(100000)])
     city = models.CharField(max_length=15, default="City" )
     address = models.CharField(max_length=300, default="House Address")
     
