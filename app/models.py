@@ -1,9 +1,11 @@
+from email.policy import default
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
+from django.core.validators import MinValueValidator,MaxValueValidator
 
 
 class User(AbstractUser):
@@ -129,8 +131,9 @@ class Residue(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     type_of_residue = models.CharField(choices=CHOICES, max_length=200, default=RICE_STRAW)
     price = models.IntegerField(default=0)
+    description = models.TextField(null=True ,blank =True)
     quantity = models.IntegerField(default=1)
-
+    image = models.ImageField(upload_to='residue_images/',null=True ,blank =True )
     def __str__(self):
         return self.type_of_residue
 
@@ -150,9 +153,17 @@ class Order(models.Model):
     machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     status = models.CharField(choices=STATUS_CHOICES, max_length=30, default=PENDING)
+    name_of_recipient = models.CharField(max_length=30, default="Reciever")
+    phone = models.IntegerField('Phone', validators=[MaxValueValidator(9999999999),MinValueValidator(1000000000)])
+    state = models.CharField(max_length=30, default="State")
+    pincode = models.IntegerField('Pincode', validators=[MaxValueValidator(999999),MinValueValidator(100000)])
+    city = models.CharField(max_length=15, default="City" )
+    address = models.CharField(max_length=300, default="House Address")
+    
+    
 
     def __str__(self):
-        return f'{self.customer.name} {self.machine.name} {self.quantity} {str(self.status)}'
+        return f'{self.customer.name} {self.machine.name} {self.quantity} {str(self.status)} {self.name_of_recipient} {self.phone} {self.state} {self.pincode} {self.city} {self.address}'
 
 
 class RentOrder(models.Model):
