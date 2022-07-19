@@ -58,7 +58,7 @@ class ResidueSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Residue
-        fields = ['id', 'owner', 'type_of_residue', 'price','description', 'quantity','image']
+        fields = ['id', 'owner', 'type_of_residue', 'price','description', 'quantity','image',]
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -96,7 +96,7 @@ class RentOrderSerializer(serializers.ModelSerializer):
 class ResidueOrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResidueOrder
-        fields = ['customer', 'residue', 'status']
+        fields = ['customer', 'residue', 'status','name_of_recipient', 'phone', 'state', 'city', 'pincode', 'address']
         read_only_fields = ['customer']
 
 
@@ -106,7 +106,7 @@ class ResidueOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ResidueOrder
-        fields = ['id', 'customer', 'residue', 'status']
+        fields = ['id', 'customer', 'residue', 'status','name_of_recipient', 'phone', 'state', 'city', 'pincode', 'address']
 
 
 class CartItemCreateSerializer(serializers.ModelSerializer):

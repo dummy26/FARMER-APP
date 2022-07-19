@@ -181,9 +181,10 @@ class RentOrder(models.Model):
     machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
     status = models.CharField(choices=STATUS_CHOICES, max_length=30, default=PENDING)
     num_of_days = models.PositiveIntegerField()
+   
 
     def __str__(self):
-        return f'{self.customer.name} {self.machine.name} {self.num_of_days} {str(self.status)}'
+        return f'{self.customer.name} {self.machine.name} {self.num_of_days} {str(self.status)} '
 
 
 class ResidueOrder(models.Model):
@@ -200,9 +201,15 @@ class ResidueOrder(models.Model):
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
     residue = models.ForeignKey(Residue, on_delete=models.CASCADE)
     status = models.CharField(choices=STATUS_CHOICES, max_length=30, default=PENDING)
-
+    name_of_recipient = models.CharField(max_length=30, default="Reciever")
+    phone = models.IntegerField('Phone', validators=[MaxValueValidator(9999999999),MinValueValidator(1000000000)],null=True,blank=True)
+    state = models.CharField(max_length=30, default="State")
+    pincode = models.IntegerField('Pincode', validators=[MaxValueValidator(999999),MinValueValidator(100000)],null=True,blank=True)
+    city = models.CharField(max_length=15, default="City" )
+    address = models.CharField(max_length=300, default="House Address")
+    
     def __str__(self):
-        return f'{self.customer.name} {self.residue.type_of_residue} {str(self.status)}'
+        return f'{self.customer.name} {self.residue.type_of_residue} {str(self.status)} {self.name_of_recipient} {self.phone} {self.state} {self.pincode} {self.city} {self.address}'
 
 
 class Cart(models.Model):

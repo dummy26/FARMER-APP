@@ -48,6 +48,8 @@ class UsersView(generics.RetrieveAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    
+    
 
 
 class ProfileView(generics.RetrieveUpdateDestroyAPIView):
